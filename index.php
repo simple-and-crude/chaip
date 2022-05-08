@@ -2,185 +2,180 @@
 
 require '../../php/scpos.php';
 
+function getArr($sign = false)
+{
+	return array(
+		'via' => isset($_SERVER['HTTP_VIA']) ? $_SERVER['HTTP_VIA'] : '',
+		'fact' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
+		'poss' => isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : '',
+		'info' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
+		'sign' => $sign
+	);
+}
 if (isset($_GET['p'][1])) {
-	$sign = substr($get =  $_GET['p'], 1);
-	if ($get[0] == '0') {
-		$aim = 'visit';
-		goto ginfo_start;
-		visit_end:
-		$url = empty($_GET['u']) ? 'https://api.ghser.com/random/api.php' : $_GET['u'];
-		if (substr($url, 0, 4) != 'http') $url = 'http://' . $url;
-		header('Location: ' . $url);
-		exit(ScpoPHP::sql_insert(getArr($sign), 'sc_chaip_data'));
+	$sign = substr($get = $_GET['p'], 1);
+	if ($get[0] === '0') {
+		$hdr = isset($_GET['u']) ? $_GET['u'] : 'https://api.ghser.com/random/api.php';
+		$hdr = substr_compare($hdr, 'http', 0, 4) === 0 ? 'Location: ' . $hdr : 'Location: http://' . $hdr;
+		header($hdr);
+		ScpoPHP::sql_insert(getArr($sign), 'sc_chaip_data');
+		exit();
 	}
-	$data = ScpoPHP::sql_select(['name' => $sign], '*', 'sc_chaip_sign');
-	if (empty($data)) {
+	if (empty(ScpoPHP::sql_select("`name`='$sign'", '*', 'sc_chaip_sign'))) {
 		$aim = 'nohok';
 		goto ghtml_start;
 	}
 	$sign = md5($sign);
-	$data = ScpoPHP::sql_select(['sign' => $sign], '*', 'sc_chaip_data');
+	$data = ScpoPHP::sql_select("`sign`='$sign'", '*', 'sc_chaip_data');
 	$aim = 'check';
 	goto ghtml_start;
 } else if ($qry = $_SERVER['QUERY_STRING']) {
 	header('Content-type: application/json');
 	if (substr_compare($qry, 'self', 0, 4) === 0) {
-		if (substr_compare($qry, 'intro', -5, 5) === 0) $data = [
-			'addr' => [true, ($u = "http://{$_SERVER['HTTP_HOST']}/chaip/") . 'self/', $u . '?self'],
-			'desc' => '通过此API，你可以简单快速的获取到自己的公网IP、代理IP、真实IP和客户端信息。' .
-				'<br />这是获取服务器外网IP的另一种更方便的解决方法。',
-			'mtci' => 'GET',
-			'type' => 'application/json',
-			'frmt' => [
-				'code' => ['@' => '@', '状态代码', 0],
-				'info' => ['@' => '@', '状态信息', 'success'],
-				'time' => ['@' => '@', '请求时间', '1687-04-19 10:05:49'],
-				'data' => [
-					'via' => ['@' => '@', '可能的代理IP', ''],
-					'poss' => ['@' => '@', '可能的真实IP', ''],
-					'fact' => ['@' => '@', '实际连接的IP', '127.0.0.1'],
-					'info' => [
-						'@' => '@', '客户端信息',
-						'Mozilla/5.0 (Windows NT 10.0; Win' .
-							'64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
-					],
-				],
-			],
-		];
-		else {
-			$aim = 'gself';
-			goto ginfo_start;
-			gself_end:
-			$data = getArr();
-		}
-		die(ScpoPHP::api_pack($data));
+		if (substr_compare($qry, 'intro', -5, 5) === 0) {
+			$url = "http://{$_SERVER['HTTP_HOST']}/chaip/";
+			$addr = array(true, "{$url}self/", "{$url}?self");
+			$desc = '
+				通过此API，你可以简单快速的获取到自己的公网IP、代理IP、真实IP和客户端信息。
+				<br />这是获取服务器外网IP的另一种更方便的解决方法。
+			';
+			$frmt = array(
+				'code' => array('@' => '@', '状态代码', 0),
+				'info' => array('@' => '@', '状态信息', 'success'),
+				'time' => array('@' => '@', '请求时间', '1687-04-19 10:05:49'),
+				'data' => array(
+					'via' => array('@' => '@', '可能的代理IP', ''),
+					'poss' => array('@' => '@', '可能的真实IP', ''),
+					'fact' => array('@' => '@', '实际连接的IP', '127.0.0.1'),
+					'info' => array('@' => '@', '客户端信息', 'Mozilla/5.0 (Windows NT'
+						. ' 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0')
+				)
+			);
+			$data = array(
+				'addr' => $url,
+				'desc' => $desc,
+				'mtci' => 'GET',
+				'type' => 'application/json',
+				'frmt' => $frmt
+			);
+		} else $data = getArr();
+		ScpoPHP::api_pack($data);
 	}
 	if (substr_compare($qry, 'check', 0, 4) === 0) die('{"code": -1}');
-	exit(header('Location: ../../../../chaip/'));
-} else if (isset($_POST['hh'])) {
+	header('Location: ../../../../chaip/');
+	exit();
+} else if (isset($_POST['create_gouz'])) {
 	if (isset($_COOKIE['alreadyHadGouz'])) {
 		$aim = 'noadd';
 		goto ghtml_start;
 	}
-	$name = isset($_COOKIE['historyGouz']) ? count($_COOKIE['historyGouz']) : 0;
-	$name = "historyGouz[{$name}]";
-	ScpoPHP::sql_insert([], 'sc_chaip_sign', true);
-	$salt = substr(md5(mt_rand(-999999, 999999)), mt_rand(0, 15), 16);
-	$hash = md5(ScpoPHP::$sql_lastID . $salt);
-	ScpoPHP::sql_update(['name' => $hash, 'salt' => $salt]);
-	setcookie('alreadyHadGouz', $hash, time() + 3600 * 2);
-	$year5 = time() + 3600 * 24 * 365 * 5;
-	setcookie($name . '[hash]', $hash, $year5);
-	setcookie($name . '[look]', substr($hash, 0, 16) . '<br />' . substr($hash, 16, 32), $year5);
-	setcookie($name . '[time]', str_replace(' ', '<br />', date('Y-m-d H:i:s')), $year5);
-	exit(header('Location: ./p=1' . $hash));
+	$hispos = isset($_COOKIE['historyGouz']) ? count($_COOKIE['historyGouz']) : 0;
+	$name = "historyGouz[$hispos]";
+	$id = ScpoPHP::sql_insert(array(), 'sc_chaip_sign', true);
+	$salt = md5(mt_rand(-999999, 999999));
+	$salt = substr($salt, mt_rand(0, 15), 16);
+	$hash = md5($sheet_id . $salt);
+	ScpoPHP::sql_update(array('name' => $hash, 'salt' => $salt));
+	$time = time();
+	setcookie('alreadyHadGouz', $hash, $time + 3600 * 2);
+	$time = $time + 3600 * 24 * 365 * 5;
+	setcookie("$name[hash]", $hash, $time);
+	setcookie("$name[look]", substr_replace($hash, '<br />', 16, 0), $time);
+	setcookie("$name[time]", str_replace(' ', '<br />', date('Y-m-d H:i:s')), $time);
+	header("Location: ./p=1$hash");
+	exit();
 } else {
 	$aim = 'index';
 	goto ghtml_start;
 }
 exit();
-ginfo_start:
-function getArr($sign = false)
-{
-	$arr = [
-		'via' => isset($_SERVER['HTTP_VIA']) ? $_SERVER['HTTP_VIA'] : '',
-		'fact' => isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '',
-		'poss' => isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : '',
-		'info' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '',
-	];
-	if ($sign) $arr['sign'] = $sign;
-	return $arr;
-}
-switch ($aim) {
-	case 'visit':
-		goto visit_end;
-	case 'gself':
-		goto gself_end;
-}
 ghtml_start:
 function getHtml($title, $style = false, $script = false, $crf = false)
 {
 ?>
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>
-		<?= $title ? $title . ' - |简·陋|钓IP工具' : '|简·陋|钓IP工具' ?>
-	</title>
-	<?php
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>
+			<?= $title ? $title . ' - |简·陋|钓IP工具' : '|简·陋|钓IP工具' ?>
+		</title>
+		<?php
 		if ($style) {
 		?>
-	<style>
-		* {
-			padding: 0;
-			margin: 0;
-			text-shadow: #fff 1px 0 0, #fff 0 1px 0, #fff -1px 0 0, #fff 0 -1px 0;
-		}
+			<style>
+				* {
+					padding: 0;
+					margin: 0;
+					text-shadow: #fff 1px 0 0, #fff 0 1px 0, #fff -1px 0 0, #fff 0 -1px 0;
+				}
 
-		.land {
-			margin: 0.3cm;
-			padding: 0.2cm;
-			background: rgba(255, 255, 255, 0.65);
-		}
+				.land {
+					margin: 0.3cm;
+					padding: 0.2cm;
+					background: rgba(255, 255, 255, 0.65);
+				}
 
-		b {
-			font-size: 0.6cm;
-			word-break: break-all;
-		}
+				b {
+					font-size: 0.6cm;
+					word-break: break-all;
+				}
 
-		#btn {
-			color: #fff;
-			position: relative;
-			font-size: 1.5cm;
-			padding: 0.1cm;
-			padding-top: 0.3cm;
-			padding-bottom: 0.3cm;
-			box-shadow: 7px 7px #000;
-			text-shadow: #000 1px 0 0, #000 0 1px 0, #000 -1px 0 0, #000 0 -1px 0;
-			margin-right: 5px;
-		}
+				#btn {
+					color: #fff;
+					position: relative;
+					font-size: 1.5cm;
+					padding: 0.1cm;
+					padding-top: 0.3cm;
+					padding-bottom: 0.3cm;
+					box-shadow: 7px 7px #000;
+					text-shadow: #000 1px 0 0, #000 0 1px 0, #000 -1px 0 0, #000 0 -1px 0;
+					margin-right: 5px;
+				}
 
-		#btn:hover {
-			left: 2px;
-			top: 2px;
-			box-shadow: 5px 5px #000;
-		}
+				#btn:hover {
+					left: 2px;
+					top: 2px;
+					box-shadow: 5px 5px #000;
+				}
 
-		#btn:active {
-			left: 5px;
-			top: 5px;
-			box-shadow: 2px 2px #000;
-		}
-	</style>
-	<?php
+				#btn:active {
+					left: 5px;
+					top: 5px;
+					box-shadow: 2px 2px #000;
+				}
+			</style>
+		<?php
 		}
 		if ($script) {
 		?>
-	<script type="text/javascript">
-		window.onload = function () {
-			var boxNode = bgp.parentNode;
-			var picStyle = bgp.style;
-			var picNode = bgp;
-			function cleanBGP() {
-				var x = boxNode.clientWidth, y = boxNode.clientHeight,
-					yFact = y, xFact = x;
-				x / y < scale ? x = y * scale : y = x / scale;
-				picStyle.width = (x += 2) + "px";
-				picStyle.height = (y += 2) + "px";
-				picStyle.left = (xFact - x) / 2 + "px";
-				picStyle.top = (yFact - y) / 2 + "px";
-			};
-			scale = picNode.width / picNode.height;
-			cleanBGP();
-			window.onresize = cleanBGP;
-		}
-	</script>
-	<?php
+			<script type="text/javascript">
+				window.onload = function() {
+					var boxNode = bgp.parentNode;
+					var picStyle = bgp.style;
+					var picNode = bgp;
+
+					function cleanBGP() {
+						var x = boxNode.clientWidth,
+							y = boxNode.clientHeight,
+							yFact = y,
+							xFact = x;
+						x / y < scale ? x = y * scale : y = x / scale;
+						picStyle.width = (x += 2) + "px";
+						picStyle.height = (y += 2) + "px";
+						picStyle.left = (xFact - x) / 2 + "px";
+						picStyle.top = (yFact - y) / 2 + "px";
+					};
+					scale = picNode.width / picNode.height;
+					cleanBGP();
+					window.onresize = cleanBGP;
+				}
+			</script>
+		<?php
 		}
 		?>
-	<?= $crf ? '<script type="text/javascript" src="http://js.seventop.top/crf.js"></script>' : '' ?>
-</head>
+		<?= $crf ? '<script type="text/javascript" src="http://js.seventop.top/crf.js"></script>' : '' ?>
+	</head>
 <?php
 }
 switch ($aim) {
@@ -192,44 +187,45 @@ switch ($aim) {
 function disHistoryList()
 {
 ?>
-<button onclick="hist.style.display = 'inline-block'">
-	显示历史钩子
-</button><br />
-<div id='hist' style="display: none;padding: 1em;" class="land">
-	<table border="1" style="text-align:center;word-break: break-all;">
-		<tr>
-			<th>编号</th>
-			<th>网址</th>
-			<th>代码</th>
-			<th>时间</th>
-		</tr>
-		<?php
+	<button onclick="hist.style.display = 'inline-block'">
+		显示历史钩子
+	</button>
+	<br />
+	<div id='hist' style="display: none;padding: 1em;" class="land">
+		<table border="1" style="text-align:center;word-break: break-all;">
+			<tr>
+				<th>编号</th>
+				<th>网址</th>
+				<th>代码</th>
+				<th>时间</th>
+			</tr>
+			<?php
 			$his = $_COOKIE['historyGouz'];
 			$len = count($his);
 			$hash = 'hash';
 			for ($i = 0; $i < $len; $i++) {
 			?>
-		<tr>
-			<td>
-				<?= $i ?>
-			</td>
-			<td>
-				<button onclick="window.location.href='./p=1<?= $his[$i][$hash] ?>'">
-					访问
-				</button>
-			</td>
-			<td>
-				<?= $his[$i]['hash'] ?>
-			</td>
-			<td>
-				<?= $his[$i]['time'] ?>
-			</td>
-		</tr>
-		<?php
+				<tr>
+					<td>
+						<?= $i ?>
+					</td>
+					<td>
+						<button onclick="window.location.href='./p=1<?= $his[$i][$hash] ?>'">
+							访问
+						</button>
+					</td>
+					<td>
+						<?= $his[$i]['hash'] ?>
+					</td>
+					<td>
+						<?= $his[$i]['time'] ?>
+					</td>
+				</tr>
+			<?php
 			}
 			?>
-	</table>
-</div>
+		</table>
+	</div>
 <?php
 }
 switch ($aim) {
@@ -264,7 +260,7 @@ index_start:
 	</div>
 	<form style="display: none;" action="./" method="POST">
 		<input type="submit" id="sub" />
-		<input name="hh" value="hh" />
+		<input name="create_gouz" value="1" />
 	</form>
 	<div style="padding: 0.5cm;">
 		<button id="btn" onclick="sub.click();">生成钩子</button>
@@ -402,12 +398,12 @@ check_start:
 				foreach ($model as $key => $val) {
 					echo '<td class="' . $key . 'td">' . str_replace(' ', '<br />', $data[$i][$key]) . '</td>';
 				}
-				?>
-			<td style="white-space: nowrap;">
-				<textarea style="display: none;"><?= $data[$i]['info'] ?></textarea>
-				<button onclick="alert('浏览器信息：\n' + this.parentNode.getElementsByTagName('textarea')[0].value);"> 查看
-				</button>
-			</td>
+			?>
+				<td style="white-space: nowrap;">
+					<textarea style="display: none;"><?= $data[$i]['info'] ?></textarea>
+					<button onclick="alert('浏览器信息：\n' + this.parentNode.getElementsByTagName('textarea')[0].value);"> 查看
+					</button>
+				</td>
 			<?php
 				echo '</tr>';
 			}
