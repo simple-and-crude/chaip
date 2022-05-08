@@ -1,6 +1,6 @@
 <?php
 
-require '../../scpos.php';
+require '../../php/scpos.php';
 
 if (isset($_GET['p'][1])) {
 	$sign = substr($get =  $_GET['p'], 1);
