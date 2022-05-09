@@ -24,4 +24,4 @@ The Type of Information:
 3. The possible true IP if there has the via-IP.
 4. The possible bowser information.
 
-Beacuse your "good friend" may be scared by your "strange website", *S.C. - Fishing Tool for IP* can let the visitors jump to the website you configured when they visit successfully. Additionally, you can make a short url for your "strange website" to dispel doubts.
+Beacuse your "good friend" may be scared by your "strange website", *S.C. - Fishing Tool for IP* can let the visitors jump to the website you configured when they visit successfully. Additionally, you can make a short url for your "strange website" to cover up the truth that this url actually is a "fish hook".
