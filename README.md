@@ -1,4 +1,6 @@
-# SC-chaip 介绍
+# SC-chaip
+
+链接：http://sc.seventop.top/chaip/
 
 *|简·陋| - 钓IP工具* 是一个可以轻松钓取他人IP地址的工具。
 
@@ -12,7 +14,9 @@
 
 考虑到对方可能会对陌生网址抱有抵抗情绪，*|简·陋| - 钓IP工具* 提供自动跳转功能。对方在成功访问网址的一瞬间，会自动跳转到您所设置的网址去。除此之外，您还可以通过制作短链接等方法降低对方的警戒心。
 
-# SC-chaip Introduction
+# SC-chaip
+
+Link: http://sc.seventop.top/chaip/
 
 *S.C. - Fishing Tool for IP* is a tool used for "fishing" others IP address easily.
 
