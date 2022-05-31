@@ -18,7 +18,7 @@
 
 Link: http://sc.seventop.top/chaip/
 
-*Simple&Crude - Fishing Tool for IP* is a tool used for "fishing" others IP address easily.
+*✨{~Simple & Crude~}✨ - Fishing Tool for IP* is a tool used for "fishing" others IP address easily.
 
 By sending a specific url to your "good friend" or someone else, you can get various information about his IP if he visited the url successfully.
 
